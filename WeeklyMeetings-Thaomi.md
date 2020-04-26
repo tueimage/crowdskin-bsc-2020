@@ -2,10 +2,10 @@
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
 
-### Date: 26/04/2020
+### Date: 11/06/2018
 
 #### What did you achieve this week?
-* Read article
+* Did an experiment
 * Wrote a section of report
 
 #### What did you struggle with?
