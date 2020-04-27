@@ -16,7 +16,7 @@ GOOGLE_CLOUD = False
 BOROMIR = True
 
 # DEFINITIONS
-IMAGE_DATA_PATH = '/data/CrowdSkin/ekcontar/dat/'
+IMAGE_DATA_PATH = r'C:/Users/20174534/Documents/BMT3/Q4/BEP/ISIC-2017_Training_Data/ISIC-2017_Training_Data/'
 MODEL_PATH = ''
 REPORT_PATH = '../reports/'
 WEIGHTS_PATH = '../weights/'
@@ -26,7 +26,7 @@ TRUTH_PATH = '../data/'
 GROUP_PATH = '../data/'
 
 if BOROMIR:
-    IMAGE_DATA_PATH = '/data/ralf/19/'
+    IMAGE_DATA_PATH = r'C:/Users/20174534/Documents/BMT3/Q4/BEP/ISIC-2017_Training_Data/ISIC-2017_Training_Data/'
 
 if TRIAL:
     STEPS_PER_EPOCH_MODEL_1 = 4
@@ -91,6 +91,8 @@ def build_model():
     x = keras.layers.Dense(256, activation='relu')(x)
     out_class = keras.layers.Dense(1, activation='sigmoid', name='out_class')(x)
     out_asymm = keras.layers.Dense(1, activation='linear', name='out_asymm')(x)
+
+
     model = keras.models.Model(conv_base.input, outputs=[out_class, out_asymm])
     model.compile(
         optimizer=keras.optimizers.RMSprop(lr=2e-5),
