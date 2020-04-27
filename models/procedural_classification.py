@@ -7,7 +7,7 @@ GOOGLE_CLOUD = False
 BOROMIR = True
 
 # DEFINITIONS
-IMAGE_DATA_PATH = '/data/CrowdSkin/ekcontar/dat/'
+IMAGE_DATA_PATH = r'C:/Users/20174534/Documents/BMT3/Q4/BEP/ISIC-2017_Training_Data/ISIC-2017_Training_Data/'
 MODEL_PATH = ''
 REPORT_PATH = '../reports/'
 TRUTH_CSV = 'ISIC-2017_Training_Part3_GroundTruth.csv'
@@ -15,7 +15,7 @@ BATCH_SIZE = 20
 TRUTH_PATH = '../data/'
 
 if BOROMIR:
-    IMAGE_DATA_PATH = '/data/ralf/19/'
+    IMAGE_DATA_PATH = r'C:/Users/20174534/Documents/BMT3/Q4/BEP/ISIC-2017_Training_Data/ISIC-2017_Training_Data/'
 
 if TRIAL:
     STEPS_PER_EPOCH_MODEL_1 = 4
@@ -36,6 +36,7 @@ from generate_data import generate_data_1
 from get_data import get_data_1
 from report_results import report_acc_and_loss, report_auc
 import numpy as np
+import ipykernel
 
 def read_data(seed):
     global test_id, test_label_c, class_weights, train, validation
