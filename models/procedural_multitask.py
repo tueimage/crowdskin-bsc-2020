@@ -1,11 +1,13 @@
 # IMPORTS
-import keras.backend.tensorflow_backend
-import numpy as np
+import tensorflow.keras as keras
+from tensorflow.keras.layers import Input
+from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from sklearn.metrics import roc_auc_score
-from generate_data import generate_data_2
-from get_data import get_data_2
+from generate_data import generate_data_2, Generate_Alt_2
+from get_data import get_data_2, annototation_type
 from report_results import report_acc_and_loss, report_auc
-from get_data import annototation_type
+import numpy as np
+import tensorflow as tf
 
 # RUN FLAGS
 TRIAL = False
@@ -13,10 +15,11 @@ SANITY_CHECK = True
 DEBUG = False
 VERBOSE = True
 GOOGLE_CLOUD = False
-BOROMIR = True
+BOROMIR = False
+GENERATE_ALTERNATIVE = False
 
 # DEFINITIONS
-IMAGE_DATA_PATH = '/data/CrowdSkin/ekcontar/dat/'
+IMAGE_DATA_PATH = 'C:\\Users\\max\\stack\\TUE\\Sync_laptop\\data_bep\\isic-challenge-2017\\ISIC-2017_Training_Data\\'
 MODEL_PATH = ''
 REPORT_PATH = '../reports/'
 WEIGHTS_PATH = '../weights/'
@@ -39,6 +42,7 @@ else:
     STEPS_PER_EPOCH_MODEL_2 = 40
     EPOCHS_MODEL_2 = 60
 
+
 def read_data(seed):
     global train_id, valid_id, test_id, train_label_c, valid_label_c, test_label_c, train_label_a
     global valid_label_a, test_label_a, train_mask, valid_mask, test_mask, class_weights
@@ -46,21 +50,37 @@ def read_data(seed):
 
     train_id, valid_id, test_id, train_label_c, valid_label_c, test_label_c, train_label_a, valid_label_a, test_label_a, train_mask, valid_mask, test_mask, class_weights = get_data_2(
         GROUP_PATH, TRUTH_PATH, TRUTH_CSV, seed, VERBOSE, SANITY_CHECK, annototation_type.asymmetry)
+    if GENERATE_ALTERNATIVE:
+        train = Generate_Alt_2(directory=IMAGE_DATA_PATH,
+                               augmentation=True,
+                               batch_size=BATCH_SIZE,
+                               file_list=train_id,
+                               label_1=train_label_c,
+                               label_2=train_label_a,
+                               sample_weights=train_mask)
+        validation = Generate_Alt_2(directory=IMAGE_DATA_PATH,
+                                    augmentation=False,
+                                    batch_size=BATCH_SIZE,
+                                    file_list=valid_id,
+                                    label_1=valid_label_c,
+                                    label_2=valid_label_a,
+                                    sample_weights=valid_mask)
 
-    train = generate_data_2(directory=IMAGE_DATA_PATH,
-                            augmentation=True,
-                            batch_size=BATCH_SIZE,
-                            file_list=train_id,
-                            label_1=train_label_c,
-                            label_2=train_label_a,
-                            sample_weights = train_mask)
-    validation = generate_data_2(directory=IMAGE_DATA_PATH,
-                                 augmentation=False,
-                                 batch_size=BATCH_SIZE,
-                                 file_list=valid_id,
-                                 label_1=valid_label_c,
-                                 label_2=valid_label_a,
-                                 sample_weights=valid_mask)
+    else:
+        train = generate_data_2(directory=IMAGE_DATA_PATH,
+                                augmentation=True,
+                                batch_size=BATCH_SIZE,
+                                file_list=train_id,
+                                label_1=train_label_c,
+                                label_2=train_label_a,
+                                sample_weights=train_mask)
+        validation = generate_data_2(directory=IMAGE_DATA_PATH,
+                                     augmentation=False,
+                                     batch_size=BATCH_SIZE,
+                                     file_list=valid_id,
+                                     label_1=valid_label_c,
+                                     label_2=valid_label_a,
+                                     sample_weights=valid_mask)
 
 
 def mse(y_true, y_pred):
@@ -79,6 +99,7 @@ def mse(y_true, y_pred):
         score_array *= mask
         score_array /= K.mean(K.cast(K.not_equal(mask, 0), K.floatx()))
         return K.mean(score_array)
+
 
 def build_model():
     img_height, img_width, img_channel = 384, 384, 3
@@ -105,45 +126,67 @@ def build_model():
 
 def fit_model(model):
     global history
-    history=model.fit_generator(
+    history = model.fit_generator(
         train,
-        steps_per_epoch= STEPS_PER_EPOCH_MODEL_1,
+        steps_per_epoch=STEPS_PER_EPOCH_MODEL_1,
         epochs=EPOCHS_MODEL_1,
-        class_weight={0:1.,1:3.},
+        class_weight={0: 1., 1: 3.},
         validation_data=validation,
-        validation_steps=50)
+        validation_steps=50,
+        callbacks=callbacks_list)
+
 
 def predict_model(model):
-    test = generate_data_2(directory=IMAGE_DATA_PATH,
-                           augmentation=False,
-                           batch_size=BATCH_SIZE,
-                           file_list=test_id,
-                           label_1=test_label_c,
-                           label_2=test_label_a,
-                           sample_weights = test_mask)
+    if GENERATE_ALTERNATIVE:
+        test = Generate_Alt_2(directory=IMAGE_DATA_PATH,
+                              augmentation=False,
+                              batch_size=BATCH_SIZE,
+                              file_list=test_id,
+                              label_1=test_label_c,
+                              label_2=test_label_a,
+                              sample_weights=test_mask)
+    else:
+        test = generate_data_2(directory=IMAGE_DATA_PATH,
+                               augmentation=False,
+                               batch_size=BATCH_SIZE,
+                               file_list=test_id,
+                               label_1=test_label_c,
+                               label_2=test_label_a,
+                               sample_weights=test_mask)
     predictions = model.predict_generator(test, 25)
     delta_size = predictions[0].size - test_label_c.count()
-    scores=np.resize(predictions[0], predictions[0].size - delta_size)
+    scores = np.resize(predictions[0], predictions[0].size - delta_size)
     auc = roc_auc_score(test_label_c, scores)
     return auc
+
+
+def callbacks(weights_filepath, seed):
+    # setup callbacks for model fitting
+    save_location = weights_filepath + 'procedural_classification_' + str(seed) + '.hdf5'
+    checkpoint = ModelCheckpoint(save_location, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    tensorboard = TensorBoard('/content/logs/procedural_classification_' + str(seed), profile_batch='10,20')
+    callbacks_list = [checkpoint, tensorboard]
+    return callbacks_list
+
 
 def save_model(model, seed):
     model_json = model.to_json()
     with open(WEIGHTS_PATH + 'model' + str(seed) + '.json', 'w') as json_file:
         json_file.write(model_json)
-    model.save_weights(WEIGHTS_PATH + 'model' +  str(seed) + '.h5')
+    model.save_weights(WEIGHTS_PATH + 'model' + str(seed) + '.h5')
+
 
 aucs = []
 if TRIAL:
     seeds = [1970, 1972]
 else:
     seeds = [1970, 1972, 2008, 2019, 2020]
-    #seeds = [2008]
 for seed in seeds:
     read_data(seed)
     model = build_model()
+    callbacks_list = callbacks(WEIGHTS_PATH, seed)
     fit_model(model)
-    #save_model(model, seed)
+    # save_model(model, seed)
     report_acc_and_loss(history, REPORT_PATH, seed)
     score = predict_model(model)
     aucs.append(score)
