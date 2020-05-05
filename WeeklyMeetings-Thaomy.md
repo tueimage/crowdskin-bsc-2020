@@ -26,21 +26,25 @@ Copy/paste and fill in the template below each week (most recent date on top, te
 #### Any other topic
 * Another question
 
-### Date: /04/2020
+### Date: 05/05/2020
 
 #### What did you achieve this week?
-* Did an experiment
-* Wrote a section of report
+* Set up environment in Google Colab Pro and tested the codes in Google Colab Pro, it worked!
+* Read recommended literature 
+* Did literature research and read some articles
+* Came up with a research goal: "The goal is to compare the existing baseline model (VGG-16) with the InceptionV3 model to see what impact it has on the performance of multi-task learning." 
+	*(in case when time left compare baseline model with VGG-19/MobileNet also)
 
 #### What did you struggle with?
-* 
+* -
 
 #### What would you like to work on next week?
-* Extend the experiment to dataset X
+* Start with coding
+* Beginning to write the introduction for the report
 
 #### Where do you need help?
-* Not sure how to do Y
+* goal validation
 
 
 #### Any other topic
-* Another question
+* Results
