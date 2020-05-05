@@ -2,6 +2,37 @@
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
 
+### Date: 05/05/2020
+
+#### What did you achieve this week?
+* Read literature
+* Started with mockup of report on overleaf
+* fixed saving of smaller dataset 
+* replicated results for procedural classification
+* Tried implementing class weight by multiplying with sample weights (not available in keras for multiclass models)
+* Tried changing image preprocessing by using the albumentations library
+* Made script to start multiple colab notebooks in parallel
+* Made script for visualising results
+#### What did you struggle with?
+
+* have not yet been able to replicate results for the multi task model (Probably due to class_weights not working)
+* multi task model seems to overfit
+
+#### What would you like to work on next week?
+* start writing introduction and problem statement 
+* replicate multitask results
+* Writing code for multitask model with more features at once
+* Implement code to load annotations that are not yet used
+* If there is time left: write code for ensemble model
+
+#### Where do you need help?
+* Is class_weights critical for reaching the test auc scores in the multitask model?
+
+
+#### Any other topic
+
+#
+
 ### Date: 28/04/2020
 
 #### What did you achieve this week?

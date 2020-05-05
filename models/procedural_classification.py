@@ -18,7 +18,7 @@ VERBOSE = True
 GOOGLE_CLOUD = False
 BOROMIR = False
 TPU = False
-GENERATE_ALTERNATIVE = True
+GENERATE_ALTERNATIVE = False
 
 # DEFINITIONS
 IMAGE_DATA_PATH = 'C:\\Users\\max\\stack\\TUE\\Sync_laptop\\data_bep\\isic-challenge-2017\\ISIC-2017_Training_Data\\'
@@ -29,6 +29,7 @@ TRUTH_CSV = 'ISIC-2017_Training_Part3_GroundTruth.csv'
 BATCH_SIZE = 20
 TRUTH_PATH = '../data/'
 WEIGHTS_PATH = '../weights/'
+ReportName = 'procedural'
 
 if BOROMIR:
     IMAGE_DATA_PATH = '/data/ralf/19/'
@@ -51,6 +52,7 @@ if TPU:
     strategy = tf.distribute.experimental.TPUStrategy(resolver)
 
 
+
 def read_data(seed):
     global test_id, test_label_c, class_weights, train, validation
     global train_id, train_label_c, valid_id, valid_label_c, test_id, test_label_c, class_weights
@@ -61,12 +63,14 @@ def read_data(seed):
                                augmentation=True,
                                batchsize=BATCH_SIZE,
                                file_list=train_id,
-                               label_1=train_label_c)
+                               label_1=train_label_c,
+                               seed=seed)
         validation = Generate_Alt_1(directory=IMAGE_DATA_PATH,
                                     augmentation=False,
                                     batchsize=BATCH_SIZE,
                                     file_list=valid_id,
-                                    label_1=valid_label_c)
+                                    label_1=valid_label_c,
+                                    seed=seed)
     else:
         train = generate_data_1(directory=IMAGE_DATA_PATH,
                                 augmentation=True,
@@ -101,7 +105,7 @@ def build_model():
         print('Trainable weights after freezing conv base = ' + str(len(model.trainable_weights)))
 
     model.compile(loss='binary_crossentropy',
-                  #optimizer=keras.optimizers.SGD(lr=0.001, momentum=0.9),
+                  # optimizer=keras.optimizers.SGD(lr=0.001, momentum=0.9),
                   optimizer=keras.optimizers.RMSprop(lr=2e-5),
                   metrics=['acc'])
     return model
@@ -133,6 +137,7 @@ def build_TPU_model():
 
 
 def fit_model(model):
+    # remember to disable shuffling
     global history
     model.summary()
     history = model.fit_generator(
@@ -142,9 +147,9 @@ def fit_model(model):
         # validation_steps=50,
         validation_data=validation,
         class_weight=class_weights,
-        max_queue_size=20
-        #callbacks=callbacks_list,
-    )
+        max_queue_size=20,
+        callbacks=callbacks_list,
+        shuffle=False)
 
 def predict_model(model):
     if GENERATE_ALTERNATIVE:
@@ -152,14 +157,16 @@ def predict_model(model):
                               augmentation=False,
                               batchsize=BATCH_SIZE,
                               file_list=test_id,
-                              label_1=test_label_c)
+                              label_1=test_label_c,
+                              seed=seed)
+        predictions = model.predict_generator(test)
     else:
         test = generate_data_1(directory=IMAGE_DATA_PATH,
                                augmentation=False,
                                batchsize=BATCH_SIZE,
                                file_list=test_id,
                                label_1=test_label_c)
-    predictions = model.predict_generator(test, steps=25)
+        predictions = model.predict_generator(test, steps=25)
 
     y_true = test_label_c
     delta_size = predictions.size - y_true.count()
@@ -189,7 +196,7 @@ for seed in seeds:
         model = build_model()
     callbacks_list = callbacks(WEIGHTS_PATH)
     fit_model(model)
-    report_acc_and_loss(history, REPORT_PATH, seed)
+    report_acc_and_loss(history, REPORT_PATH, seed, ReportName)
     score = predict_model(model)
     aucs.append(score)
-report_auc(aucs, REPORT_PATH)
+report_auc(aucs, REPORT_PATH, seeds[0], ReportName)

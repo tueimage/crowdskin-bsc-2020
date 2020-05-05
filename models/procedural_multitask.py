@@ -11,12 +11,12 @@ import tensorflow as tf
 
 # RUN FLAGS
 TRIAL = False
-SANITY_CHECK = True
+SANITY_CHECK = False
 DEBUG = False
 VERBOSE = True
 GOOGLE_CLOUD = False
 BOROMIR = False
-GENERATE_ALTERNATIVE = False
+GENERATE_ALTERNATIVE = True
 
 # DEFINITIONS
 IMAGE_DATA_PATH = 'C:\\Users\\max\\stack\\TUE\\Sync_laptop\\data_bep\\isic-challenge-2017\\ISIC-2017_Training_Data\\'
@@ -27,6 +27,7 @@ TRUTH_CSV = 'ISIC-2017_Training_Part3_GroundTruth.csv'
 BATCH_SIZE = 20
 TRUTH_PATH = '../data/'
 GROUP_PATH = '../data/'
+ReportName = 'multitask'
 
 if BOROMIR:
     IMAGE_DATA_PATH = '/data/ralf/19/'
@@ -57,14 +58,16 @@ def read_data(seed):
                                file_list=train_id,
                                label_1=train_label_c,
                                label_2=train_label_a,
-                               sample_weights=train_mask)
+                               sample_weights=train_mask,
+                               class_weights=class_weights)
         validation = Generate_Alt_2(directory=IMAGE_DATA_PATH,
                                     augmentation=False,
                                     batch_size=BATCH_SIZE,
                                     file_list=valid_id,
                                     label_1=valid_label_c,
                                     label_2=valid_label_a,
-                                    sample_weights=valid_mask)
+                                    sample_weights=valid_mask,
+                                    class_weights=class_weights)
 
     else:
         train = generate_data_2(directory=IMAGE_DATA_PATH,
@@ -125,15 +128,17 @@ def build_model():
 
 
 def fit_model(model):
+    # remember to disable shuffling
     global history
     history = model.fit_generator(
         train,
-        steps_per_epoch=STEPS_PER_EPOCH_MODEL_1,
-        epochs=EPOCHS_MODEL_1,
-        class_weight={0: 1., 1: 3.},
+        steps_per_epoch=STEPS_PER_EPOCH_MODEL_2,
+        epochs=EPOCHS_MODEL_2,
+        # class_weight={0: 1., 1: 3.},
         validation_data=validation,
         validation_steps=50,
-        callbacks=callbacks_list)
+        callbacks=callbacks_list,
+        shuffle=False)
 
 
 def predict_model(model):
@@ -144,7 +149,9 @@ def predict_model(model):
                               file_list=test_id,
                               label_1=test_label_c,
                               label_2=test_label_a,
-                              sample_weights=test_mask)
+                              sample_weights=test_mask,
+                              class_weights=class_weights)
+        predictions = model.predict_generator(test)
     else:
         test = generate_data_2(directory=IMAGE_DATA_PATH,
                                augmentation=False,
@@ -153,14 +160,14 @@ def predict_model(model):
                                label_1=test_label_c,
                                label_2=test_label_a,
                                sample_weights=test_mask)
-    predictions = model.predict_generator(test, 25)
+        predictions = model.predict_generator(test, 25)
     delta_size = predictions[0].size - test_label_c.count()
     scores = np.resize(predictions[0], predictions[0].size - delta_size)
     auc = roc_auc_score(test_label_c, scores)
     return auc
 
 
-def callbacks(weights_filepath, seed):
+def callbacks(weights_filepath):
     # setup callbacks for model fitting
     save_location = weights_filepath + 'procedural_classification_' + str(seed) + '.hdf5'
     checkpoint = ModelCheckpoint(save_location, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
@@ -169,7 +176,7 @@ def callbacks(weights_filepath, seed):
     return callbacks_list
 
 
-def save_model(model, seed):
+def save_model():
     model_json = model.to_json()
     with open(WEIGHTS_PATH + 'model' + str(seed) + '.json', 'w') as json_file:
         json_file.write(model_json)
@@ -184,10 +191,10 @@ else:
 for seed in seeds:
     read_data(seed)
     model = build_model()
-    callbacks_list = callbacks(WEIGHTS_PATH, seed)
+    callbacks_list = callbacks(WEIGHTS_PATH)
     fit_model(model)
-    # save_model(model, seed)
-    report_acc_and_loss(history, REPORT_PATH, seed)
+    # save_model()
+    report_acc_and_loss(history, REPORT_PATH, seed, ReportName)
     score = predict_model(model)
     aucs.append(score)
-report_auc(aucs, REPORT_PATH)
+report_auc(aucs, REPORT_PATH, seeds[0], ReportName)

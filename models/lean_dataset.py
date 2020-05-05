@@ -9,6 +9,6 @@ hf = h5py.File('all_images'+'.h5', 'w')
 for filename in list_dir:
     cur_img = image.load_img(path=os.path.join(IMAGE_DATA_PATH, filename), grayscale=False,
                                          target_size=(384, 384))
-    img = image.img_to_array(cur_img)
-    hf.create_dataset(filename, data=img, compression='lzf')
+    img = image.img_to_array(cur_img, dtype='u1')
+    hf.create_dataset(filename, data=img, compression=None, dtype='u1')
 hf.close()
