@@ -15,7 +15,7 @@ Copy/paste and fill in the template below each week (most recent date on top, te
 #### What would you like to work on next week?
 * Finish the introduction part
 * Finish the code
-* Finish Materials & Method part of the report
+* Start Materials & Method part of the report
 * Start with Results part of the report
 
 
