@@ -1,12 +1,13 @@
 import numpy as np
-from tensorflow.keras.utils import Sequence
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from keras.utils import Sequence
+from keras.preprocessing.image import ImageDataGenerator
 import tensorflow as tf
 import os
 import matplotlib.pyplot as plt
 import h5py
-from albumentations import Compose, ShiftScaleRotate, HorizontalFlip, VerticalFlip, RGBShift, ToFloat
+from albumentations import Compose, ShiftScaleRotate, HorizontalFlip, VerticalFlip, \
+    RGBShift, ToFloat, GridDistortion, Normalize
+from cv2.xphoto import createGrayworldWB
 from cv2 import BORDER_REPLICATE
 
 
@@ -33,54 +34,45 @@ class Generate_Alt_1(Sequence):
         hf = h5py.File(self.directory + 'all_images.h5', 'r')
         for filename in batch_x_in:
             # load_h5
-
             img = hf.get(filename + '.jpg')
             img = np.array(img)
 
-            # load jpeg
-            # cur_img = image.load_img(path=os.path.join(self.directory, filename + '.jpg'), grayscale=False,
-            #                          target_size=(384, 384))
-            # img = image.img_to_array(cur_img)
-            # cur_img.close()
-
-            # plots
-            # plt.figure()
-            # plt.imshow(img.astype(int))
-            # plt.show()
-
             if self.augmentation:
-                # datagen = ImageDataGenerator(
-                #     rotation_range=360,
-                #     width_shift_range=0.1,
-                #     height_shift_range=0.1,
-                #     shear_range=0.2,
-                #     zoom_range=0.2,
-                #     channel_shift_range=20,
-                #     horizontal_flip=True,
-                #     vertical_flip=True,
-                #     fill_mode="nearest")
-                #
-                # batch_x[count] = datagen.random_transform(img) / 255.0
+                # wb = createGrayworldWB()
+                # wb.setSaturationThreshold(1)
+                # img = wb.balanceWhite(img)
+                datagen = ImageDataGenerator(
+                    rotation_range=360,
+                    width_shift_range=0.1,
+                    height_shift_range=0.1,
+                    shear_range=0.2,
+                    zoom_range=0.2,
+                    channel_shift_range=20,
+                    horizontal_flip=True,
+                    vertical_flip=True,
+                    fill_mode="nearest")
 
-                augmentations = Compose([ShiftScaleRotate(shift_limit=0.1, rotate_limit=360, scale_limit=0.2,
-                                                          border_mode=BORDER_REPLICATE, always_apply=True),
-                                         HorizontalFlip(),
-                                         VerticalFlip(),
-                                         RGBShift(p=1),
-                                         ToFloat(max_value=255)
-                                         ])
+                batch_x[count] = datagen.random_transform(img) / 255.0
 
-                batch_x[count, :, :, :] = augmentations(image=img)['image']
 
+                # augmentations = Compose([GridDistortion(),
+                #                          HorizontalFlip(),
+                #                          VerticalFlip(),
+                #                          ShiftScaleRotate(shift_limit=0.1, rotate_limit=360, scale_limit=0.1,
+                #                                           border_mode=BORDER_REPLICATE, always_apply=True),
+                #                          ])
+
+                # batch_x[count, :, :, :] = augmentations(image=img)['image'] / 255.0
             else:
+                # wb = createGrayworldWB()
+                # wb.setSaturationThreshold(1)
+                # img = wb.balanceWhite(img)
                 batch_x[count, :, :, :] = img / 255.0
-            # batch_y[count] = batch_y_in[count]
             count += 1
+        # print('\r' + str(idx))  # debug
         hf.close()
         return batch_x, batch_y
-    #
-    # def on_epoch_end(self):
-    #     np.random.shuffle(self.file_list)
+
 
 
 def generate_data_1(directory, augmentation, batchsize, file_list, label_1):
@@ -137,8 +129,7 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
                 i = 0
             img = hf.get(file_list.iloc[i] + '.jpg')
             img = np.array(img)
-            # img = image.load_img(directory + file_list.iloc[i] + '.jpg', grayscale=False, target_size=(384, 384))
-            # img = image.img_to_array(img)
+
             if augmentation:
                 datagen = ImageDataGenerator(
                     rotation_range=360,
@@ -152,6 +143,7 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
                     fill_mode="nearest")
                 img = datagen.random_transform(img)
                 img = img / 255.0
+
             else:
                 img = img / 255.0
 
@@ -164,6 +156,7 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
 
             i = i + 1
             # print('\r', str(i/20))
+
         hf.close()
         if all(sample == 0 for sample in sample_weight):
             print('all weights zero')
@@ -213,14 +206,6 @@ class Generate_Alt_2(Sequence):
             batch_y2 = self.label2[idx * self.batch_size:(idx + 1) * self.batch_size]
             sample_weight = self.sample_weights[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-        weigthed = False
-        if weigthed:
-            weigths_true = np.where(batch_y1 == 1, self.class_weights[1], batch_y1)
-            weights_replace = np.where(batch_y1 == 0, self.class_weights[0], batch_y1)
-            weights_false = np.where(weights_replace == 1, 0, weights_replace)
-            weights = weigths_true + weights_false
-            sample_weight = sample_weight * weights
-
         batch_length = len(batch_x_in)
         batch_x = np.empty((batch_length, 384, 384, 3))
 
@@ -231,11 +216,7 @@ class Generate_Alt_2(Sequence):
             # load h5
             img = hf.get(filename + '.jpg')
             img = np.array(img)
-            # load jpeg
-            # cur_img = image.load_img(path=os.path.join(self.directory, filename + '.jpg'), grayscale=False,
-            #                          target_size=(384, 384))
-            # img = image.img_to_array(cur_img)
-            # cur_img.close()
+
             if self.augmentation:
                 datagen = ImageDataGenerator(
                     rotation_range=360,
@@ -248,16 +229,9 @@ class Generate_Alt_2(Sequence):
                     vertical_flip=True,
                     fill_mode="nearest")
                 batch_x[count] = datagen.random_transform(img) / 255.0
-                # image_shear = ImageDataGenerator(shear_range=0.2)
-                # augmentations = Compose([ShiftScaleRotate(shift_limit=0.1, rotate_limit=360, scale_limit=0.2,
-                #                                           border_mode=BORDER_REPLICATE, always_apply=True),
-                #                          HorizontalFlip(),
-                #                          VerticalFlip(),
-                #                          RGBShift(p=1),
-                #                          ToFloat(max_value=255)
-                #                          ])
-                #
-                # batch_x[count, :, :, :] = augmentations(image=img)['image']
+
+                batch_x[count, :, :, :] = img / 255.0
+
             else:
                 batch_x[count, :, :, :] = img / 255.0
 

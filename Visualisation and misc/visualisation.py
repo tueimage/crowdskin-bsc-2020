@@ -6,7 +6,7 @@ import os
 
 #path to reports
 logpath = 'C:\\Users\\max\\stack\\TUE\\Sync_laptop\\BEP\\crowdskin-bsc-2020\\reports'
-names_of_runs = ['procedural']
+names_of_runs = ['procedural_normal', 'procedural_albumentations', 'procedural_albumentations_WB', "procedural_normal_WB"]
 
 os.chdir(logpath)
 list_of_files = os.listdir()
@@ -18,7 +18,7 @@ def aucs_df():
         for file_name in cur_filenames:
             auc = pd.read_csv(file_name)
             row_number = file_name[-8:-4]
-            aucs.loc[row_number, run_name] = auc.iloc[0,1]
+            aucs.loc[row_number, run_name] = auc.iloc[0, 1]
     return aucs
 
 def loss_acc(run_name):
@@ -49,14 +49,14 @@ def plot_acc_loss(acc, loss):
     plt.ylabel('loss')
     plt.show()
 
-def plot_aucs():
-    aucs = aucs_df()
+def plot_aucs(aucs):
     plt.figure()
-    plt.boxplot(x=aucs['procedural'])
+    aucs.boxplot()
     plt.ylabel('auc')
     plt.title('auc for all models')
     plt.show()
 
-acc, loss = loss_acc('procedural')
+acc, loss = loss_acc(names_of_runs[0])
 plot_acc_loss(acc, loss)
-plot_aucs()
+aucs = aucs_df()
+plot_aucs(aucs)

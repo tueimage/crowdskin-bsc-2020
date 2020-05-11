@@ -169,18 +169,19 @@ def predict_model(model):
 
 def callbacks(weights_filepath):
     # setup callbacks for model fitting
-    save_location = weights_filepath + 'procedural_classification_' + str(seed) + '.hdf5'
-    checkpoint = ModelCheckpoint(save_location, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
+    # save_location = weights_filepath + 'procedural_classification_' + str(seed) + '.hdf5'
+    # checkpoint = ModelCheckpoint(save_location, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     tensorboard = TensorBoard('/content/logs/procedural_classification_' + str(seed), profile_batch='10,20')
-    callbacks_list = [checkpoint, tensorboard]
-    return callbacks_list
+    callbacks_list_out = [tensorboard]
+    return callbacks_list_out
 
 
 def save_model():
     model_json = model.to_json()
-    with open(WEIGHTS_PATH + 'model' + str(seed) + '.json', 'w') as json_file:
+    path = WEIGHTS_PATH + ReportName + '_' + str(seed) + '.json'
+    with open(path, 'w') as json_file:
         json_file.write(model_json)
-    model.save_weights(WEIGHTS_PATH + 'model' + str(seed) + '.h5')
+    model.save_weights(WEIGHTS_PATH + ReportName + '_' + str(seed) + '.h5')
 
 
 aucs = []

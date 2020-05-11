@@ -2,6 +2,34 @@
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
 
+### Date: 12/05/2020
+
+#### What did you achieve this week?
+* Started on writing introduction
+* replicated results for procedural classification and multitask classification
+* Tried white balancing as a preprocessing step
+* read literature on multitask and enemble learning
+#### What did you struggle with?
+
+
+#### What would you like to work on next week?
+* continue writing introduction 
+* make code for ensemble model
+* try different combinations of multitask models (combinations of features)
+* Implement code to load annotations that are not yet used
+
+#### Where do you need help?
+* Class weights do now work using keras but i have seen some strange behaviour for the multitask model:
+    'conv_base.trainable = False' should result in only the last dense layer being trainable. 
+    However with the provided code the whole model is trainable. The results produced by the model are in line
+    with results from the paper.
+
+
+
+#### Any other topic
+
+#
+
 ### Date: 05/05/2020
 
 #### What did you achieve this week?
