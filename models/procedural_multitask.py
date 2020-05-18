@@ -1,7 +1,7 @@
 # IMPORTS
-import tensorflow.keras as keras
-from tensorflow.keras.layers import Input
-from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+import keras
+from keras.layers import Input
+from keras.callbacks import ModelCheckpoint, TensorBoard
 from sklearn.metrics import roc_auc_score
 from generate_data import generate_data_2, Generate_Alt_2
 from get_data import get_data_2, annototation_type
@@ -16,7 +16,7 @@ DEBUG = False
 VERBOSE = True
 GOOGLE_CLOUD = False
 BOROMIR = False
-GENERATE_ALTERNATIVE = True
+GENERATE_ALTERNATIVE = False
 
 # DEFINITIONS
 IMAGE_DATA_PATH = 'C:\\Users\\max\\stack\\TUE\\Sync_laptop\\data_bep\\isic-challenge-2017\\ISIC-2017_Training_Data\\'
@@ -24,7 +24,7 @@ MODEL_PATH = ''
 REPORT_PATH = '../reports/'
 WEIGHTS_PATH = '../weights/'
 TRUTH_CSV = 'ISIC-2017_Training_Part3_GroundTruth.csv'
-BATCH_SIZE = 20
+BATCH_SIZE = 5 #20
 TRUTH_PATH = '../data/'
 GROUP_PATH = '../data/'
 ReportName = 'multitask'
@@ -50,7 +50,7 @@ def read_data(seed):
     global train, validation
 
     train_id, valid_id, test_id, train_label_c, valid_label_c, test_label_c, train_label_a, valid_label_a, test_label_a, train_mask, valid_mask, test_mask, class_weights = get_data_2(
-        GROUP_PATH, TRUTH_PATH, TRUTH_CSV, seed, VERBOSE, SANITY_CHECK, annototation_type.asymmetry)
+        GROUP_PATH, TRUTH_PATH, TRUTH_CSV, seed, VERBOSE, SANITY_CHECK, annototation_type.border)
     if GENERATE_ALTERNATIVE:
         train = Generate_Alt_2(directory=IMAGE_DATA_PATH,
                                augmentation=True,
@@ -137,7 +137,7 @@ def fit_model(model):
         # class_weight={0: 1., 1: 3.},
         validation_data=validation,
         validation_steps=50,
-        callbacks=callbacks_list,
+        # callbacks=callbacks_list,
         shuffle=False)
 
 

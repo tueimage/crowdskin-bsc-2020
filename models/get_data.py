@@ -5,10 +5,15 @@ import numpy as np
 from sklearn import preprocessing
 import enum
 
+# apply extra data
+EXTRA_DATA = True
+
+
 class annototation_type(enum.Enum):
-   asymmetry = 1
-   border = 2
-   color = 3
+    asymmetry = 1
+    border = 2
+    color = 3
+
 
 def get_data_1(truth_path, truth_csv, seed, verbose, sanity_check):
     df = pd.read_csv(truth_path + truth_csv)
@@ -34,7 +39,7 @@ def get_data_1(truth_path, truth_csv, seed, verbose, sanity_check):
         stratify=y_train)
 
     class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
-    class_weights = dict(enumerate(class_weights)) #fix for bug
+    class_weights = dict(enumerate(class_weights))  # fix for bug
 
     if verbose:
         print('in train set = \n' + str(y_train.value_counts()))
@@ -42,6 +47,7 @@ def get_data_1(truth_path, truth_csv, seed, verbose, sanity_check):
         print('in test set = \n' + str(y_test.value_counts()))
 
     return (X_train, y_train, X_validate, y_validate, X_test, y_test, class_weights)
+
 
 def get_data_2(group_path, truth_path, truth_csv, seed, verbose, sanity_check, type):
     df = pd.read_csv(truth_path + truth_csv)
@@ -70,7 +76,6 @@ def get_data_2(group_path, truth_path, truth_csv, seed, verbose, sanity_check, t
     annotation_valid = np.zeros(len(X_validate))
     annotation_test = np.zeros(len(X_test))
 
-
     if type == annototation_type.asymmetry:
         annotation_id, annotation_label = get_asymm_score(group_path, sanity_check)
         if verbose: print('Asymmetry score is used')
@@ -82,7 +87,6 @@ def get_data_2(group_path, truth_path, truth_csv, seed, verbose, sanity_check, t
             if type == annototation_type.color:
                 if verbose: print('Color score is used')
                 annotation_id, annotation_label = get_color_score(group_path)
-
 
     for i in range(len(X_train)):
         for j in range(len(annotation_id)):
@@ -132,15 +136,16 @@ def get_data_2(group_path, truth_path, truth_csv, seed, verbose, sanity_check, t
             annotation_train, annotation_valid, annotation_test,
             sample_weight_train, sample_weight_valid, sample_weight_test, class_weights)
 
+
 def get_color_score(group_path):
-    df_1 = pd.read_excel(group_path + 'group01_C.xlsx') # 3
-    df_2 = pd.read_excel(group_path + 'group02_C.xlsx') # 3
-    df_4 = pd.read_excel(group_path + 'group04_C.xlsx') # 3
-    df_51 = pd.read_excel(group_path + 'group05_C1.xlsx') # 3
-    df_52 = pd.read_excel(group_path + 'group05_C2.xlsx') # 3
-    df_6 = pd.read_excel(group_path + 'group06_C.xlsx') # 3
-    df_7 = pd.read_excel(group_path + 'group07_C.xlsx') # 6
-    df_8 = pd.read_excel(group_path + 'group08_C.xlsx') # 3
+    df_1 = pd.read_excel(group_path + 'group01_C.xlsx')  # 3
+    df_2 = pd.read_excel(group_path + 'group02_C.xlsx')  # 3
+    df_4 = pd.read_excel(group_path + 'group04_C.xlsx')  # 3
+    df_51 = pd.read_excel(group_path + 'group05_C1.xlsx')  # 3
+    df_52 = pd.read_excel(group_path + 'group05_C2.xlsx')  # 3
+    df_6 = pd.read_excel(group_path + 'group06_C.xlsx')  # 3
+    df_7 = pd.read_excel(group_path + 'group07_C.xlsx')  # 6
+    df_8 = pd.read_excel(group_path + 'group08_C.xlsx')  # 3
 
     a_1 = (preprocessing.scale(df_1['i']) + preprocessing.scale(df_1['ii']) + preprocessing.scale(
         df_1['iii'])) / 3.0
@@ -167,15 +172,15 @@ def get_color_score(group_path):
 
 
 def get_border_score(group_path):
-    df_1 = pd.read_excel(group_path + 'group01_B.xlsx') # 3
-    df_2 = pd.read_excel(group_path + 'group02_B.xlsx') # 3
-    df_3 = pd.read_excel(group_path + 'group03_B.xlsx') # 3
-    df_4 = pd.read_excel(group_path + 'group04_B.xlsx') # 3
-    df_51 = pd.read_excel(group_path + 'group05_B1.xlsx') # 2
-    df_52 = pd.read_excel(group_path + 'group05_B2.xlsx') # 3
-    df_6 = pd.read_excel(group_path + 'group06_B.xlsx') # 3
-    df_7 = pd.read_excel(group_path + 'group07_B.xlsx') # 6
-    df_8 = pd.read_excel(group_path + 'group08_B.xlsx') # 6
+    df_1 = pd.read_excel(group_path + 'group01_B.xlsx')  # 3
+    df_2 = pd.read_excel(group_path + 'group02_B.xlsx')  # 3
+    df_3 = pd.read_excel(group_path + 'group03_B.xlsx')  # 3
+    df_4 = pd.read_excel(group_path + 'group04_B.xlsx')  # 3
+    df_51 = pd.read_excel(group_path + 'group05_B1.xlsx')  # 2
+    df_52 = pd.read_excel(group_path + 'group05_B2.xlsx')  # 3
+    df_6 = pd.read_excel(group_path + 'group06_B.xlsx')  # 3
+    df_7 = pd.read_excel(group_path + 'group07_B.xlsx')  # 6
+    df_8 = pd.read_excel(group_path + 'group08_B.xlsx')  # 6
 
     a_1 = (preprocessing.scale(df_1['i']) + preprocessing.scale(df_1['ii']) + preprocessing.scale(
         df_1['iii'])) / 3.0
@@ -201,6 +206,7 @@ def get_border_score(group_path):
 
     return (border_id, border_label)
 
+
 def get_asymm_score(group_path, sanity_check):
     # Label-Asymmetry Score
     df_1 = pd.read_excel(group_path + 'group01_A.xlsx')
@@ -211,7 +217,6 @@ def get_asymm_score(group_path, sanity_check):
     df_6 = pd.read_excel(group_path + 'group06_A.xlsx')
     df_7 = pd.read_excel(group_path + 'group07_A.xlsx')
     df_8 = pd.read_excel(group_path + 'group08_A.xlsx')
-
 
     a_1 = (preprocessing.scale(df_1['i']) + preprocessing.scale(df_1['ii']) + preprocessing.scale(
         df_1['iii'])) / 3.0

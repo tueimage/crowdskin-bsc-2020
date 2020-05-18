@@ -1,6 +1,34 @@
 # Weekly meetings
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
+### Date: 19/05/2020
+
+#### What did you achieve this week?
+* implemented ensemble learning
+* implemented weighted ensemble learning (using random search optimization on validation set to optimize weights)
+* implemented multitask learning using multiple classes(pairs of 2 and pairs of 3)
+* experimented with different multitask models 
+* experimented with adding dropout
+#### What did you struggle with?
+* Most models seem to overfit quite quickly (probably due to the size of the dataset)
+* Multitask learning on multiple classes does not work well (one of the features overfits thus results are worse than
+procedural classification)
+
+#### What would you like to work on next week?
+* continue writing report 
+* Add more crowdsourced data
+* Found that ensembling works best when combining different types of models, so i want to implement more types of models
+that are added to the ensemble. (resnet, inception as a start)
+* Make an ensemble of ensembles of different models if there is time left.
+
+#### Where do you need help?
+* 
+
+
+
+#### Any other topic
+
+#
 
 ### Date: 12/05/2020
 
