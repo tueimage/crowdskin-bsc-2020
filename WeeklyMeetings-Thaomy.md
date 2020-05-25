@@ -1,6 +1,27 @@
 # Weekly meetings
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
+### Date: 25/05/2020
+
+#### What did you achieve this week?
+* Literature research
+* Did 4 experiments with ResNet50
+* Worked on Materials & Method
+
+#### What did you struggle with?
+* Due to a busy week I was not able to finish all the tasks I wanted to, I will make up for this next week.
+
+#### What would you like to work on next week?
+* Finish Materials & Method
+* Start writing Results part of the report and analyzing the results
+
+
+#### Where do you need help?
+* -
+
+
+#### Any other topic
+* Deadline report?
 
 ### Date: 18/05/2020
 
