@@ -103,6 +103,8 @@ def generate_data_1(directory, augmentation, batchsize, file_list, label_1):
                 img = datagen.random_transform(img)
                 img = img / 255.0
             else:
+                # datagen = ImageDataGenerator(zoom_range=0.2)
+                # img = datagen.random_transform(img)
                 img = img / 255.0
 
             image_batch.append(img)
@@ -158,6 +160,8 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
                 img = img / 255.0
 
             else:
+                # datagen = ImageDataGenerator(zoom_range=0.2)
+                # img = datagen.random_transform(img)
                 img = img / 255.0
 
             image_batch.append(img)

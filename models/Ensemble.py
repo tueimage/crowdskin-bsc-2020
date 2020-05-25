@@ -2,16 +2,20 @@ import keras
 from generate_data import generate_data_2, Generate_Alt_2
 from get_data import get_data_2, annototation_type
 from report_results import report_acc_and_loss, report_auc
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, plot_confusion_matrix
 from scipy import optimize
 import numpy as np
 import os
+from vis.visualization import visualize_cam
+from vis.utils import utils
+import matplotlib.pyplot as plt
 
 # FLAGS
 # Types are weighted or non_weighted
 SANITY_CHECK = False
 VERBOSE = True
 WEIGHTED = False
+VISUALISE_CAM = True
 
 # Definitions
 
@@ -27,6 +31,7 @@ GROUP_PATH = '../data/'
 SAVENAME = 'ensemble_weighted'
 # Name of saved weights from experiments
 ReportName = 'multitask'
+Annotation_Type = annototation_type.asymmetry
 
 
 def read_data(seed, annotation):
@@ -39,6 +44,7 @@ def read_data(seed, annotation):
 
 
 def load_model(seed, annotation, WeightsPath):
+    # Load model from model type depending on savename for the model and filename end(asymmetry, border or color)
     folder_list = os.listdir(WeightsPath)
     filtered_reportname = [s for s in folder_list if ReportName in s]
     filtered_seed = [s for s in filtered_reportname if str(seed) in s]
@@ -48,12 +54,15 @@ def load_model(seed, annotation, WeightsPath):
         if annotation == annotation.asymmetry:
             file_json = [s for s in filtered_json if s[-19:-10] == "asymmetry"][0]
             file_h5 = [s for s in filtered_h5 if s[-17:-8] == "asymmetry"][0]
+            model_type = "asymmetry"
         if annotation == annotation.border:
             file_json = [s for s in filtered_json if s[-16:-10] == "border"][0]
             file_h5 = [s for s in filtered_h5 if s[-14:-8] == "border"][0]
+            model_type = "border"
         if annotation == annotation.color:
             file_json = [s for s in filtered_json if s[-15:-10] == "color"][0]
             file_h5 = [s for s in filtered_h5 if s[-13:-8] == "color"][0]
+            model_type = "color"
     except:
         print("Not all model files in folder or ReportName incorrect")
         raise
@@ -62,10 +71,11 @@ def load_model(seed, annotation, WeightsPath):
     json_file.close()
     model = keras.models.model_from_json(ModelJSON)
     model.load_weights(WeightsPath + file_h5)
-    return model
+    return model, model_type
 
 
 def ensemble_predictions(seeds):
+    # predict from generator using loaded model file.
     gt_test_dict = {}
     predictions_dict_test = {}
     gt_val_dict = {}
@@ -74,9 +84,9 @@ def ensemble_predictions(seeds):
         ann_count = 0
         predictions_test = np.zeros([3, 250])
         predictions_val = np.zeros([3, 350])
-        read_data(seed, annototation_type.asymmetry)
-        for a_type in annototation_type:
-            model = load_model(seed, a_type, WEIGHTS_PATH)
+        read_data(seed, Annotation_Type)
+        for a_type in Annotation_Type:
+            model, model_type = load_model(seed, a_type, WEIGHTS_PATH)
             test_gen = generate_data_2(directory=IMAGE_DATA_PATH,
                                        augmentation=False,
                                        batch_size=20,
@@ -100,6 +110,11 @@ def ensemble_predictions(seeds):
             delta_size_val = model_pred_val[0].size - valid_label_c.count()
             predictions_val[ann_count, :] = np.resize(model_pred_val[0], model_pred_val[0].size - delta_size_val)
 
+            if VISUALISE_CAM:
+                plot_gradCAM(model, test_gen, model_type, seed)
+
+            plot_confusion_matrix(X=test_label_c, y_true=predictions_test[ann_count, :])
+
             ann_count += 1
         gt_test_dict[seed] = test_label_c
         gt_val_dict[seed] = valid_label_c
@@ -109,6 +124,7 @@ def ensemble_predictions(seeds):
 
 
 def auc_score_ensemble():
+    # Ensemble model predictions
     for seed in seeds:
         gt_test = gt_test_dict[seed]
         predictions = predictions_dict_test[seed]
@@ -125,6 +141,7 @@ def loss_mse(weights, gt_val, predictions_val):
 
 
 def auc_score_ensemble_weigthed():
+    # Ensemble model predictions using weight factor optimized on validation set.
     for seed in seeds:
         gt_val = gt_val_dict[seed]
         predictions_val = predictions_dict_val[seed]
@@ -147,7 +164,27 @@ def auc_score_ensemble_weigthed():
         auc = [roc_auc_score(gt_test, predictions_weighted)]
         report_auc(auc, REPORT_PATH, seed, SAVENAME)
 
+def plot_gradCAM(model, test_gen, model_type, seed):
+    # plot a Gradient-weighted Class Activation Mapping of the test images.
+    last_layer = utils.find_layer_idx(model, "block5_conv3")
+    batch = next(test_gen)
+    number_in_batch = np.argwhere(batch[1]['out_class'] > 0.5)[3][0]
+    # print(number_in_batch) # Debug
+    image = batch[0][number_in_batch]
+    GT = batch[1]['out_class'][number_in_batch]
+    print(batch[1]['out_class'])
+    prediction = model.predict(np.expand_dims(image, axis=0))[0][0][0]
+    CAM_image = visualize_cam(model=model, layer_idx=last_layer, seed_input=image, filter_indices=None)
+    fig, axes = plt.subplots(1, 2)
+    axes[0].imshow(image)
+    axes[1].imshow(image)
+    axes[1].imshow(CAM_image, alpha=0.5, cmap='jet')
+    plt.suptitle('Model type: ' + model_type + ', Prediction: ' + str(round(prediction, 2)) + ', Ground truth: ' + str(GT) + ', Seed: ' + str(seed))
+    axes[1].set_title('Gradient-CAM of Test image')
+    axes[0].set_title('Test image')
+    plt.show()
 
-seeds = [1970]#, 1972, 2008, 2019, 2020]
+
+seeds = [2008]#, 1972, 1970, 2019, 2020]
 gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = ensemble_predictions(seeds)
 auc_score_ensemble()
