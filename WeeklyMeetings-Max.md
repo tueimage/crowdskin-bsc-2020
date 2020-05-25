@@ -1,6 +1,29 @@
 # Weekly meetings
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
+### Date: 26/05/2020
+
+#### What did you achieve this week?
+* implemented 3 extra models(resnet50v2, inceptionv3, efficientnetB1)
+* made plans for ensembles (ensembling per annotation type or per model type)
+* report writing
+* implemented Gradient-CAM as a visualisation tool (what is the model looking at)
+#### What did you struggle with?
+
+
+#### What would you like to work on next week?
+* finish ensembling of extra model models (ensemble of different models per annotation which are again ensembled)
+* further report work on materials and methods and results
+* maybe add more data (depending on goal of report)
+
+#### Where do you need help?
+
+
+
+#### Any other topic
+
+#
+
 ### Date: 19/05/2020
 
 #### What did you achieve this week?
@@ -22,7 +45,6 @@ that are added to the ensemble. (resnet, inception as a start)
 * Make an ensemble of ensembles of different models if there is time left.
 
 #### Where do you need help?
-* 
 
 
 
