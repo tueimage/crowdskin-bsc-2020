@@ -17,11 +17,11 @@ Copy/paste and fill in the template below each week (most recent date on top, te
 
 
 #### Where do you need help?
-* -
+* 
 
 
 #### Any other topic
-* Deadline report?
+* presentation date
 
 ### Date: 18/05/2020
 
