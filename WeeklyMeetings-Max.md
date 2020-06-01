@@ -1,6 +1,28 @@
 # Weekly meetings
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
+### Date: 02/06/2020
+
+#### What did you achieve this week?
+* finished all model training and ensembling
+* visualised results
+* started visualising model architecture
+* report writing
+#### What did you struggle with?
+
+
+#### What would you like to work on next week?
+* finish materials and methods and results of the report
+* make final code with a manual for the github repository
+
+#### Where do you need help?
+
+
+
+#### Any other topic
+
+#
+
 ### Date: 26/05/2020
 
 #### What did you achieve this week?
