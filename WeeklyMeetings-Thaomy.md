@@ -8,6 +8,7 @@ Copy/paste and fill in the template below each week (most recent date on top, te
 * Literature research
 * almost finished Materials & Method
 * Visualized results
+* Brainstorming about report and stuff
 
 #### What did you struggle with?
 * 
