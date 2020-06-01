@@ -2,6 +2,51 @@
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
 
+### Date: 01/06/2020
+
+#### What did you achieve this week?
+* Literature research
+* almost finished Materials & Method
+* Visualized results
+* Brainstorming about report and stuff
+
+#### What did you struggle with?
+* 
+
+#### What would you like to work on next week?
+* Finish Materials & Method
+* More in-depth analysis of the results
+* Start discussion
+
+#### Where do you need help?
+* 
+
+#### Any other topic
+* Grading report & presentation
+
+
+### Date: 25/05/2020
+
+#### What did you achieve this week?
+* Literature research
+* Did 4 experiments with ResNet50
+* Worked on Materials & Method
+
+#### What did you struggle with?
+* Due to a busy week I was not able to finish all the tasks I wanted to, I will make up for this next week.
+
+#### What would you like to work on next week?
+* Finish Materials & Method
+* Start writing Results part of the report and analyzing the results
+
+
+#### Where do you need help?
+* 
+
+
+#### Any other topic
+* presentation date
+
 ### Date: 18/05/2020
 
 #### What did you achieve this week?
