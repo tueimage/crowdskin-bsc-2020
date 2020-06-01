@@ -1,6 +1,29 @@
 # Weekly meetings
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
+
+### Date: 01/06/2020
+
+#### What did you achieve this week?
+* Literature research
+* almost finished Materials & Method
+* Visualized results
+
+#### What did you struggle with?
+* 
+
+#### What would you like to work on next week?
+* Finish Materials & Method
+* More in-depth analysis of the results
+* Start discussion
+
+#### Where do you need help?
+* 
+
+#### Any other topic
+* Grading report & presentation
+
+
 ### Date: 25/05/2020
 
 #### What did you achieve this week?
