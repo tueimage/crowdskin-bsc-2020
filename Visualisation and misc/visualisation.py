@@ -7,11 +7,39 @@ import os
 #path to reports
 logpath = 'C:\\Users\\max\\stack\\TUE\\Sync_laptop\\BEP\\crowdskin-bsc-2020\\reports'
 names_of_runs = ['procedural_normal',
-                 "multitask_asymmetry",
-                 "multitask_border",
-                 'multitask_color',
-                 "ensemble",
-                 "ensemble_weighted"]
+                 # "multitask_asymmetry",
+                 # "multitask_border",
+                 # 'multitask_color',
+                 "ensemble_vgg16",
+                 # "ensemble_vgg16_weighted",
+                 # "ensemble",
+                 # "ensemble_weighted",
+                 # "multitask_efficientnet_asymmetry",
+                 # "multitask_efficientnet_border",
+                 # "multitask_efficientnet_color",
+                 "ensemble_efficientnetb1",
+                 # "ensemble_efficientnetb1_weighted",
+                 # "multitask_inception_asymmetry",
+                 # "multitask_inception_border",
+                 # "multitask_inception_color",
+                 "ensemble_inceptionv3",
+                 # "ensemble_inceptionv3_weighted"
+                 # "multitask_resnet_asymmetry",
+                 # "multitask_resnet_border",
+                 # "multitask_resnet_color",
+                 "ensemble_resnet50v2",
+                 # "ensemble_asymmetry",
+                 # "ensemble_border",
+                 # "ensemble_color",
+                 # "ensemble_asymmetry_weighted",
+                 # "ensemble_border_weighted",
+                 # "ensemble_color_weighted",
+                 # "ensemble_all_models",
+                 "ensemble_multi_model"]  # ,
+                 # "ensemble_all_model_weighted"]  # ,
+                 # "ensemble_multi_model_weighted"]
+                 # "ensemble_all_model_weighted",
+                 # "ensemble_all_ABC_weighted"]
 
 os.chdir(logpath)
 list_of_files = os.listdir()
@@ -71,7 +99,7 @@ def plot_aucs(aucs):
     plt.title('auc for all models')
     plt.show()
 
-acc, loss = loss_acc(names_of_runs[1])
-plot_acc_loss(acc, loss)
+# acc, loss = loss_acc(names_of_runs[1])
+# plot_acc_loss(acc, loss)
 aucs = aucs_df()
 plot_aucs(aucs)
