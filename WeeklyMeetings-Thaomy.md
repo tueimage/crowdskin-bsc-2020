@@ -2,6 +2,27 @@
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
 
+### Date: 08/06/2020
+
+#### What did you achieve this week?
+* Literature research
+* Worked on report
+* Created images for report
+* Did some experiments with prediction
+
+#### What did you struggle with?
+* predictions, but I think I might have solved the problem
+
+#### What would you like to work on next week?
+* Experiment with predictions
+* Finish report
+
+#### Where do you need help?
+* 
+
+#### Any other topic
+* Reimburse 2 months Colab pro
+
 ### Date: 01/06/2020
 
 #### What did you achieve this week?
