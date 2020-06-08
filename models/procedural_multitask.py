@@ -1,5 +1,6 @@
 # IMPORTS
 import tensorflow.keras as keras
+from sklearn.tests.test_base import K
 from tensorflow.keras.layers import Input
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from sklearn.metrics import roc_auc_score
@@ -19,7 +20,7 @@ BOROMIR = False
 GENERATE_ALTERNATIVE = False
 
 # DEFINITIONS
-IMAGE_DATA_PATH = '/content/ramdisk/ISIC-2017_Training_Data/'
+IMAGE_DATA_PATH = 'C:/Users/20174534/Documents/BMT3/Q4/BEP/ISIC-2017_Training_Data/'
 MODEL_PATH = ''
 REPORT_PATH = '../reports/'
 WEIGHTS_PATH = '../weights/'
@@ -103,7 +104,7 @@ def mse(y_true, y_pred):
 
 def build_model():
     img_height, img_width, img_channel = 384, 384, 3
-    conv_base = keras.applications.vgg16.VGG16(
+    conv_base = keras.applications.inception_v3.InceptionV3(
         include_top=False,
         weights='imagenet',
         input_shape=(img_height, img_width, img_channel))
@@ -114,7 +115,7 @@ def build_model():
     out_asymm = keras.layers.Dense(1, activation='linear', name='out_asymm')(x)
     model = keras.models.Model(conv_base.input, outputs=[out_class, out_asymm])
     model.compile(
-        optimizer=keras.optimizers.RMSprop(lr=2e-5),
+        optimizer=keras.optimizers.RMSprop(lr=0.01), #2e-5
         loss={'out_class': 'binary_crossentropy', 'out_asymm': 'mse'},
         loss_weights={'out_class': 0.5, 'out_asymm': 0.5},
         metrics={'out_class': 'accuracy'})
@@ -157,7 +158,7 @@ def predict_model(model):
     delta_size = predictions[0].size - test_label_c.count()
     scores = np.resize(predictions[0], predictions[0].size - delta_size)
     auc = roc_auc_score(test_label_c, scores)
-    return auc
+    return auc, predictions
 
 
 def callbacks(weights_filepath, seed):
@@ -188,6 +189,11 @@ for seed in seeds:
     fit_model(model)
     # save_model(model, seed)
     report_acc_and_loss(history, REPORT_PATH, seed)
-    score = predict_model(model)
+    score, predictions = predict_model(model)
+    pred_nulkolom = np.array(predictions[0])
+    pred_eenkolom = np.array(predictions[1])
+
+    np.savetxt("first_col" + str(seed) + ".csv", pred_nulkolom)
+    np.savetxt("second_col" + str(seed) + ".csv", pred_eenkolom)
     aucs.append(score)
 report_auc(aucs, REPORT_PATH)

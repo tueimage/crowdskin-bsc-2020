@@ -34,6 +34,7 @@ def get_data_1(truth_path, truth_csv, seed, verbose, sanity_check):
         stratify=y_train)
 
     class_weights = class_weight.compute_class_weight('balanced', np.unique(y_train), y_train)
+    class_weights = dict(enumerate(class_weights)) #fix for bug
 
     if verbose:
         print('in train set = \n' + str(y_train.value_counts()))
