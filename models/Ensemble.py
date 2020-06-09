@@ -173,7 +173,7 @@ def auc_score_ensemble_multi_model():
 
 
 def auc_score_ensemble_multi_model_weighted():
-    model_savenames = ["ensemble_vgg16_weighted", "ensemble_efficientnetb1_weighted", "ensemble_inceptionv3_weighted"]
+    model_savenames = ["ensemble_vgg16_weighted", "ensemble_efficientnetb1_weighted", "ensemble_inceptionv3_weighted", "ensemble_resnet50v2_weighted"]
     for seed in seeds:
         predictions_mean = np.zeros([len(model_savenames), 250])
         for ReportName_idx in range(len(ReportNames)):
