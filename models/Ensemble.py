@@ -27,7 +27,7 @@ TRUTH_CSV = 'ISIC-2017_Training_Part3_GroundTruth.csv'
 BATCH_SIZE = 20
 TRUTH_PATH = '../data/'
 GROUP_PATH = '../data/'
-# Savename for aucs
+# Savename for aucs of ensemble
 SAVENAME = 'ensemble_weighted'
 # Names of saved weights from experiments
 ReportNames = ['multitask', "multitask_efficientnet", "multitask_inception"]
@@ -75,7 +75,7 @@ def load_model(seed, annotation, WeightsPath, ReportName):
 
 
 def ensemble_predictions(seeds, ReportName):
-    # predict from generator using loaded model file.
+    # return predictions for a single model in a dictionary for 5 seeds for all annotation (ABC) types
     gt_test_dict = {}
     predictions_dict_test = {}
     gt_val_dict = {}
@@ -125,8 +125,8 @@ def ensemble_predictions(seeds, ReportName):
 
 
 def auc_score_ensemble_single(ReportName):
+    # make ensemble of ABC features of a single model
     gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[ReportName]
-    # Ensemble model predictions
     for seed in seeds:
         gt_test = gt_test_dict[seed]
         predictions = predictions_dict_test[seed]
@@ -135,27 +135,115 @@ def auc_score_ensemble_single(ReportName):
         report_auc(auc, REPORT_PATH, seed, SAVENAME)
 
 
+def auc_score_ensemble_single_weigthed(ReportName):
+    # Ensemble model predictions using weight factor optimized on validation set for a single model
+    gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[ReportName]
+    for seed in seeds:
+        gt_val = gt_val_dict[seed]
+        predictions_val = predictions_dict_val[seed]
+        weights = np.array([1 / 3, 1 / 3, 1 / 3])
+        weigths_min = optimize.minimize(loss_mse,
+                                        weights,
+                                        args=(gt_val, predictions_val),
+                                        method="Nelder-Mead",
+                                        tol=1e-6,
+                                        constraints=({'type': 'eq', 'fun': lambda w: 1 - sum(w)}))
+        gt_test = gt_test_dict[seed]
+        predictions_test = predictions_dict_test[seed]
+        predictions_weighted = np.average(predictions_test, weights=weigths_min.x, axis=0)
+        print(weigths_min.x)
+        auc = [roc_auc_score(gt_test, predictions_weighted)]
+        report_auc(auc, REPORT_PATH, seed, SAVENAME)
+
+
 def auc_score_ensemble_multi_ABC():
-    # Ensemble model predictions
+    # Make ensemble of ensemble ensemble of multiple models for abc features per model (Model ensemble)
     model_savenames = ["ensemble_asymmetry", "ensemble_border", "ensemble_color"]
     for seed in seeds:
-        predictions_mean = np.zeros(len(annototation_type), 250)
+        predictions_mean = np.zeros([len(annototation_type), 250])
         for i in range(len(annototation_type)):
-            pred_per_model = np.zeros(len(ReportNames), 250)
+            pred_per_model = np.zeros([len(ReportNames), 250])
             for ReportNameidx in range(len(ReportNames)):
                 cur_report = ReportNames[ReportNameidx]
                 gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[cur_report]
                 pred_per_model[ReportNameidx, :] = predictions_dict_test[seed][i]
             gt_test = gt_test_dict[seed]
             predictions_mean[i, :] = np.average(pred_per_model, axis=0)
-            auc = roc_auc_score(gt_test, predictions_mean[i, :])
+            auc = [roc_auc_score(gt_test, predictions_mean[i, :])]
             report_auc(auc, REPORT_PATH, seed, model_savenames[i])
         predictions_all_mean = np.average(predictions_mean, axis=0)
-        all_auc = roc_auc_score(gt_test, predictions_all_mean)
+        all_auc = [roc_auc_score(gt_test, predictions_all_mean)]
         report_auc(all_auc, REPORT_PATH, seed, 'ensemble_all_models')
 
 
+def auc_score_ensemble_multi_ABC_weighted():
+    # Make ensemble of ensemble ensemble of multiple models for abc features per model (Model ensemble) where results
+    # are weighted in every ensemble of models (using optimization on validation set)
+    model_savenames = ["ensemble_asymmetry", "ensemble_border", "ensemble_color"]
+    for seed in seeds:
+        predictions_test_mean = np.zeros([len(annototation_type), 250])
+        predictions_val_mean = np.zeros([len(annototation_type), 350])
+        for i in range(len(annototation_type)):
+            pred_test_per_model = np.zeros([len(ReportNames), 250])
+            pred_val_per_model = np.zeros([len(ReportNames), 350])
+            for ReportNameidx in range(len(ReportNames)):
+                cur_report = ReportNames[ReportNameidx]
+                gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[cur_report]
+                pred_test_per_model[ReportNameidx, :] = predictions_dict_test[seed][i]
+                pred_val_per_model[ReportNameidx, :] = predictions_dict_val[seed][i]
+            predictions_test_mean[i, :] = np.average(pred_test_per_model, axis=0)
+            predictions_val_mean[i, :] = np.average(pred_val_per_model, axis=0)
+        gt_test = gt_test_dict[seed]
+        gt_val = gt_val_dict[seed]
+        weights = np.array([1/3, 1/3, 1/3])
+        weigths_min = optimize.minimize(loss_mse,
+                                        weights,
+                                        args=(gt_val, predictions_val_mean),
+                                        method="Nelder-Mead",
+                                        tol=1e-6,
+                                        constraints=({'type': 'eq', 'fun': lambda w: 1 - sum(w)}))
+        print(weigths_min.x)
+        predictions_all_mean = np.average(predictions_test_mean, weights=weigths_min.x, axis=0)
+        all_auc = [roc_auc_score(gt_test, predictions_all_mean)]
+        report_auc(all_auc, REPORT_PATH, seed, 'ensemble_all_ABC_weighted')
+
+
+def auc_score_ensemble_multi_ABC_model_weighted():
+    # Make ensemble of ensemble ensemble of multiple models for abc features per model (Model ensemble) where every
+    # model is weighted before it is ensembled per abc feature (using optimization on validation set)
+    model_savenames = ["ensemble_asymmetry_weighted", "ensemble_border_weighted", "ensemble_color_weighted"]
+    for seed in seeds:
+        predictions_test_mean = np.zeros([len(annototation_type), 250])
+        for i in range(len(annototation_type)):
+            pred_test_per_model = np.zeros([len(ReportNames), 250])
+            pred_val_per_model = np.zeros([len(ReportNames), 350])
+            for ReportNameidx in range(len(ReportNames)):
+                cur_report = ReportNames[ReportNameidx]
+                gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[cur_report]
+                pred_test_per_model[ReportNameidx, :] = predictions_dict_test[seed][i]
+                pred_val_per_model[ReportNameidx, :] = predictions_dict_val[seed][i]
+            gt_val = gt_val_dict[seed]
+            gt_test = gt_test_dict[seed]
+
+            weights = np.full([len(ReportNames)], fill_value=1/len(ReportNames))
+            weigths_min = optimize.minimize(loss_mse,
+                                            weights,
+                                            args=(gt_val, pred_val_per_model),
+                                            method="Nelder-Mead",
+                                            tol=1e-6,
+                                            constraints=({'type': 'eq', 'fun': lambda w: 1 - sum(w)}))
+            predictions_test_mean[i, :] = np.average(pred_test_per_model, weights=weigths_min.x, axis=0)
+            print(weigths_min.x)
+            auc = [roc_auc_score(gt_test, predictions_test_mean[i, :])]
+            report_auc(auc, REPORT_PATH, seed, model_savenames[i])
+
+        predictions_all_mean = np.average(predictions_test_mean, axis=0)
+        all_auc = [roc_auc_score(gt_test, predictions_all_mean)]
+        report_auc(all_auc, REPORT_PATH, seed, 'ensemble_all_model_weighted')
+
+
 def auc_score_ensemble_multi_model():
+    # Make ensemble of multiple models per abc feature (Feature ensemble)
     model_savenames = ["ensemble_vgg16", "ensemble_efficientnetb1", "ensemble_inceptionv3", "ensemble_resnet50v2"]
     for seed in seeds:
         predictions_mean = np.zeros([len(model_savenames), 250])
@@ -173,6 +261,8 @@ def auc_score_ensemble_multi_model():
 
 
 def auc_score_ensemble_multi_model_weighted():
+    # Make ensemble of multiple models per abc feature (Feature ensemble) where the results are weighted per feature
+    # (using optimization on validation set)
     model_savenames = ["ensemble_vgg16_weighted", "ensemble_efficientnetb1_weighted", "ensemble_inceptionv3_weighted", "ensemble_resnet50v2_weighted"]
     for seed in seeds:
         predictions_mean = np.zeros([len(model_savenames), 250])
@@ -205,103 +295,11 @@ def loss_mse(weights, gt_val, predictions_val):
     return loss
 
 
-def auc_score_ensemble_single_weigthed(ReportName):
-    gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[ReportName]
-    # Ensemble model predictions using weight factor optimized on validation set.
-    for seed in seeds:
-        gt_val = gt_val_dict[seed]
-        predictions_val = predictions_dict_val[seed]
-        weights = np.array([1 / 3, 1 / 3, 1 / 3])
-        weigths_min = optimize.minimize(loss_mse,
-                                        weights,
-                                        args=(gt_val, predictions_val),
-                                        method="Nelder-Mead",
-                                        tol=1e-6,
-                                        constraints=({'type': 'eq', 'fun': lambda w: 1 - sum(w)}))
-        # weigths_min = optimize.differential_evolution(loss_mse,
-        #                                               bounds=[(0.0, 1.0) for _ in range(len(weights))],
-        #                                               args=(gt_val, predictions_val),
-        #                                               maxiter=1000,
-        #                                               tol=1e-7)
-        gt_test = gt_test_dict[seed]
-        predictions_test = predictions_dict_test[seed]
-        predictions_weighted = np.average(predictions_test, weights=weigths_min.x, axis=0)
-        print(weigths_min.x)
-        auc = [roc_auc_score(gt_test, predictions_weighted)]
-        report_auc(auc, REPORT_PATH, seed, SAVENAME)
-
-
-def auc_score_ensemble_multi_ABC_weighted():
-    # Ensemble model predictions
-    model_savenames = ["ensemble_asymmetry", "ensemble_border", "ensemble_color"]
-    for seed in seeds:
-        predictions_test_mean = np.zeros([len(annototation_type), 250])
-        predictions_val_mean = np.zeros([len(annototation_type), 350])
-        for i in range(len(annototation_type)):
-            pred_test_per_model = np.zeros([len(ReportNames), 250])
-            pred_val_per_model = np.zeros([len(ReportNames), 350])
-            for ReportNameidx in range(len(ReportNames)):
-                cur_report = ReportNames[ReportNameidx]
-                gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[cur_report]
-                pred_test_per_model[ReportNameidx, :] = predictions_dict_test[seed][i]
-                pred_val_per_model[ReportNameidx, :] = predictions_dict_val[seed][i]
-            predictions_test_mean[i, :] = np.average(pred_test_per_model, axis=0)
-            predictions_val_mean[i, :] = np.average(pred_val_per_model, axis=0)
-        gt_test = gt_test_dict[seed]
-        gt_val = gt_val_dict[seed]
-        weights = np.array([1/3, 1/3, 1/3])
-        weigths_min = optimize.minimize(loss_mse,
-                                        weights,
-                                        args=(gt_val, predictions_val_mean),
-                                        method="Nelder-Mead",
-                                        tol=1e-6,
-                                        constraints=({'type': 'eq', 'fun': lambda w: 1 - sum(w)}))
-        print(weigths_min.x)
-        predictions_all_mean = np.average(predictions_test_mean, weights=weigths_min.x, axis=0)
-        all_auc = [roc_auc_score(gt_test, predictions_all_mean)]
-        report_auc(all_auc, REPORT_PATH, seed, 'ensemble_all_ABC_weighted')
-
-
-def auc_score_ensemble_multi_ABC_model_weighted():
-    # Ensemble model predictions
-    model_savenames = ["ensemble_asymmetry_weighted", "ensemble_border_weighted", "ensemble_color_weighted"]
-    for seed in seeds:
-        predictions_test_mean = np.zeros([len(annototation_type), 250])
-        predictions_val_mean = np.zeros([len(annototation_type), 350])
-        for i in range(len(annototation_type)):
-            pred_test_per_model = np.zeros([len(ReportNames), 250])
-            pred_val_per_model = np.zeros([len(ReportNames), 350])
-            for ReportNameidx in range(len(ReportNames)):
-                cur_report = ReportNames[ReportNameidx]
-                gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = reports_dict[cur_report]
-                pred_test_per_model[ReportNameidx, :] = predictions_dict_test[seed][i]
-                pred_val_per_model[ReportNameidx, :] = predictions_dict_val[seed][i]
-            gt_val = gt_val_dict[seed]
-            gt_test = gt_test_dict[seed]
-
-            weights = np.full([len(ReportNames)], fill_value=1/len(ReportNames))
-            weigths_min = optimize.minimize(loss_mse,
-                                            weights,
-                                            args=(gt_val, pred_val_per_model),
-                                            method="Nelder-Mead",
-                                            tol=1e-6,
-                                            constraints=({'type': 'eq', 'fun': lambda w: 1 - sum(w)}))
-            predictions_test_mean[i, :] = np.average(pred_test_per_model, weights=weigths_min.x, axis=0)
-            print(weigths_min.x)
-            auc = [roc_auc_score(gt_test, predictions_test_mean[i, :])]
-            report_auc(auc, REPORT_PATH, seed, model_savenames[i])
-
-        predictions_all_mean = np.average(predictions_test_mean, axis=0)
-        all_auc = [roc_auc_score(gt_test, predictions_all_mean)]
-        report_auc(all_auc, REPORT_PATH, seed, 'ensemble_all_model_weighted')
-
-
 def plot_gradCAM(model, test_gen, model_type, seed, ReportName):
     # plot a Gradient-weighted Class Activation Mapping of the test images.
     last_layer = utils.find_layer_idx(model, "out_class")
-    # last_layer = 'Placeholder' #finish
     batch = next(test_gen)
-    number_in_batch = np.argwhere(batch[1]['out_class'] > 0.5)[3][0]
+    number_in_batch = np.argwhere(batch[1]['out_class'] < 0.5)[5][0]
     # print(number_in_batch) # Debug
     image = batch[0][number_in_batch]
     GT = batch[1]['out_class'][number_in_batch]
@@ -316,10 +314,21 @@ def plot_gradCAM(model, test_gen, model_type, seed, ReportName):
     axes[0].imshow(image)
     axes[1].imshow(image)
     axes[1].imshow(CAM_image, alpha=0.5, cmap='jet')
-    plt.suptitle('Model type: ' + model_type + ', Prediction: ' + str(round(prediction, 2)) + ', Ground truth: ' + str(
-        GT) + ', Seed: ' + str(seed))
+    if ReportName == 'multitask':
+        ReportName = 'VGG16'
+    if ReportName == 'multitask_efficientnet':
+        ReportName = 'EfficientNetB1'
+    if ReportName == 'multitask_inception':
+        ReportName = 'InceptionV3'
+    if ReportName == 'multitask_resnet':
+        ReportName = 'ResNet'
+    plt.suptitle('Model: ' + ReportName + ', Model type: ' + model_type + ', Prediction: ' + str(round(prediction, 2)) + ', Ground truth: ' + str(
+        GT))# + ', Seed: ' + str(seed))
     axes[1].set_title('Gradient-CAM of Test image')
     axes[0].set_title('Test image')
+    axes[1].axis('off')
+    axes[0].axis('off')
+    # plt.savefig('/content/gdrive/My Drive/crowdskin-bsc-2020/Visualisation and misc/' + ReportName + '_' + str(seed) + '_' + model_type + '.svg')
     plt.show()
 
 
@@ -328,4 +337,4 @@ reports_dict = dict()
 for ReportName in ReportNames:
     gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val = ensemble_predictions(seeds, ReportName)
     reports_dict[ReportName] = [gt_test_dict, predictions_dict_test, gt_val_dict, predictions_dict_val]
-auc_score_ensemble_single(ReportNames[0])
+auc_score_ensemble_multi_ABC()

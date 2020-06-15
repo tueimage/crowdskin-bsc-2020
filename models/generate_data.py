@@ -5,10 +5,6 @@ import tensorflow as tf
 import os
 import matplotlib.pyplot as plt
 import h5py
-from albumentations import Compose, ShiftScaleRotate, HorizontalFlip, VerticalFlip, \
-    RGBShift, ToFloat, GridDistortion, Normalize
-from cv2.xphoto import createGrayworldWB
-from cv2 import BORDER_REPLICATE
 
 
 class Generate_Alt_1(Sequence):
@@ -29,7 +25,6 @@ class Generate_Alt_1(Sequence):
 
         batch_length = len(batch_x_in)
         batch_x = np.empty((batch_length, 384, 384, 3))
-        # batch_y = np.empty(batch_length)
         count = 0
         hf = h5py.File(self.directory + 'all_images.h5', 'r')
         for filename in batch_x_in:
@@ -38,9 +33,6 @@ class Generate_Alt_1(Sequence):
             img = np.array(img)
 
             if self.augmentation:
-                # wb = createGrayworldWB()
-                # wb.setSaturationThreshold(1)
-                # img = wb.balanceWhite(img)
                 datagen = ImageDataGenerator(
                     rotation_range=360,
                     width_shift_range=0.1,
@@ -54,19 +46,7 @@ class Generate_Alt_1(Sequence):
 
                 batch_x[count] = datagen.random_transform(img) / 255.0
 
-
-                # augmentations = Compose([GridDistortion(),
-                #                          HorizontalFlip(),
-                #                          VerticalFlip(),
-                #                          ShiftScaleRotate(shift_limit=0.1, rotate_limit=360, scale_limit=0.1,
-                #                                           border_mode=BORDER_REPLICATE, always_apply=True),
-                #                          ])
-
-                # batch_x[count, :, :, :] = augmentations(image=img)['image'] / 255.0
             else:
-                # wb = createGrayworldWB()
-                # wb.setSaturationThreshold(1)
-                # img = wb.balanceWhite(img)
                 batch_x[count, :, :, :] = img / 255.0
             count += 1
         # print('\r' + str(idx))  # debug
@@ -86,8 +66,6 @@ def generate_data_1(directory, augmentation, batchsize, file_list, label_1):
                 i = 0
             img = hf.get(file_list.iloc[i] + '.jpg')
             img = np.array(img)
-            # img = image.load_img(directory + file_list.iloc[i] + '.jpg', grayscale=False, target_size=(384, 384))
-            # img = image.img_to_array(img)
 
             if augmentation:
                 datagen = ImageDataGenerator(
@@ -103,8 +81,7 @@ def generate_data_1(directory, augmentation, batchsize, file_list, label_1):
                 img = datagen.random_transform(img)
                 img = img / 255.0
             else:
-                # datagen = ImageDataGenerator(zoom_range=0.2)
-                # img = datagen.random_transform(img)
+
                 img = img / 255.0
 
             image_batch.append(img)
@@ -160,8 +137,7 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
                 img = img / 255.0
 
             else:
-                # datagen = ImageDataGenerator(zoom_range=0.2)
-                # img = datagen.random_transform(img)
+
                 img = img / 255.0
 
             image_batch.append(img)
@@ -174,7 +150,7 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
             if label_4 is not None:
                 label_4_batch.append(label_4[i])
                 sample_weight_4.append(sample_weights_4[i])
-            # print(str(label_1.iloc[i]) + ',' + str(label_2[i]) + ',' + str(sample_weights[i]) )
+            # print(str(label_1.iloc[i]) + ',' + str(label_2[i]) + ',' + str(sample_weights[i]) ) #debug
 
             i = i + 1
         hf.close()
@@ -256,7 +232,6 @@ def generate_data_2(directory, augmentation, batch_size, file_list, label_1, lab
 
 
 class Generate_Alt_2(Sequence):
-    #TODO fix previous
     def __init__(self, directory, augmentation, batch_size, file_list, label_1, label_2, sample_weights, class_weights):
         self.file_list = file_list
         self.directory = directory

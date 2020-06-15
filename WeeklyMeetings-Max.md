@@ -1,6 +1,28 @@
 # Weekly meetings
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
+
+### Date: 16/06/2020
+
+#### What did you achieve this week?
+* Finsihed report 
+* Finished manual
+
+#### What did you struggle with?
+* It was unfortunately not possible to generate Grad-CAM of ensembles with the current architecture. However it was meant
+more as a sort of debugging step of the single multitask model to show preprocessing could be improved.
+* I was unfortunately not able to adress all feedback due to limited time. (Still, most feedback was adressed)
+
+#### What would you like to work on next week?
+
+
+#### Where do you need help?
+
+
+#### Any other topic
+
+#
+
 ### Date: 09/06/2020
 
 #### What did you achieve this week?

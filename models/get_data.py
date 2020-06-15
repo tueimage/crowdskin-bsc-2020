@@ -4,7 +4,6 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 import enum
-
 # apply extra data
 EXTRA_DATA = True
 

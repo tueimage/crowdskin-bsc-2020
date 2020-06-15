@@ -7,6 +7,7 @@ from generate_data import generate_data_2, Generate_Alt_2
 from get_data import get_data_2, annototation_type
 from report_results import report_acc_and_loss, report_auc
 import numpy as np
+from keras.layers import GlobalAveragePooling2D
 import tensorflow as tf
 
 # RUN FLAGS

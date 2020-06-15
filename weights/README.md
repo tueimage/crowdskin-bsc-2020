@@ -1,0 +1,1 @@
+# folder for storing h5 weight and json model files 
