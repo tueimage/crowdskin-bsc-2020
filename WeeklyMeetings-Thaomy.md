@@ -2,6 +2,25 @@
 
 Copy/paste and fill in the template below each week (most recent date on top, template at the bottom), commit and push your changes BEFORE coming to the weekly meeting with your supervisor.    
 
+### Date: 16/06/2020
+
+#### What did you achieve this week?
+* finish the report
+
+#### What did you struggle with?
+* 
+
+#### What would you like to work on next week?
+
+
+#### Where do you need help?
+* Haven't finished README yet, should you write it for github or for a zipfile to run the code?
+
+#### Any other topic
+* Found out that there are 596 annotated images for the feature color instead of 445 as stated in te paper. 
+
+
+
 ### Date: 08/06/2020
 
 #### What did you achieve this week?
