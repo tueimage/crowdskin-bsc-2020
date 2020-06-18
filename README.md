@@ -23,5 +23,5 @@ files for visualisation can be found [here](Visualisation)
 
 The codes and files to compare the different networks and features with the true data can be found [here](Codes)
 
-All the wrong predicted labels compared to the true data for feature per network can be found [here](annotated data/wrong predicted labels.xlsx)
+All the wrong predicted labels compared to the true data for feature per network can be found [here](annotated data/wrong predicted labels.xlsx))
 
