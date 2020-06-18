@@ -235,5 +235,3 @@ class Generate_Alt_2(Sequence):
             batch_x,
             {'out_class': batch_y1, 'out_asymm': batch_y2},
             {'out_asymm': sample_weight})
-
-
