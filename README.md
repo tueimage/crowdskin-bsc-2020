@@ -13,13 +13,13 @@ and to investigate which models may be combined to optimize the latter performan
 
 - Models: [Baseline model](models/Baseline.ipynb)
 - Models: [Multi-task model](models/Multitask model.ipynb)
-In order to run the baseline and multi-task model, the codes in the ["models"](models) folder, [annotated data](annotated data) and [skin lesions dataset](skin lesion dataset/all_images.h5)  are needed
+In order to run the baseline and multi-task model, the codes in the ["models"](models) folder, ["annotated data"](annotated data) and [skin lesions dataset](https://drive.google.com/drive/folders/1D4AvE4cE7uEsVfj2zK6JwPRw_Htm69f8?usp=sharing)  are needed
 - Reports : [VGG-16](VGG16)
 - Reports : [VGG19](VGG19)
 - Reports : [InceptionV3](inceptionV3)
 - Reports : [ResNet50](ResNet50)
 
-files for visualisation can be found [here](Visualisation)
+
 
 The codes and files to compare the different networks and features with the true data can be found [here](Codes)
 
