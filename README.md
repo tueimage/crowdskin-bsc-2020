@@ -23,5 +23,5 @@ In order to run the baseline and multi-task model, the codes in the ["models"](m
 
 The codes and files to compare the different networks and features with the true data can be found [here](Codes)
 
-All the wrong predicted labels compared to the true data for feature per network can be found [here](annotated_data/wrong_predicted_ labels.xlsx))
+All the wrong predicted labels compared to the true data for feature per network can be found [here](annotated_data/wrong_predicted_labels.xlsx))
 
